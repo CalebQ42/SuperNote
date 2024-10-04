@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   darkstorm_common: ^2.0.1
+  styled_text: ^8.1.0
 
 dev_dependencies:
   flutter_test:

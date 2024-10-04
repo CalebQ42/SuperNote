@@ -1,3 +1,3 @@
-# supernote
+# SuperNote
 
-A new Flutter project.
+A OneNote clone.
