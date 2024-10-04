@@ -8,6 +8,7 @@ class NoteCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(note.title);
+    return OverflowBox(
+    );
   }
 }
