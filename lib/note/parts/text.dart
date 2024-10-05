@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:styled_text/widgets/styled_text.dart';
-
-import 'package:supernote/note/note.dart';
+import 'package:supernote/note/part.dart';
 
 class TextNotePart extends NotePart {
   String value;
@@ -11,8 +10,7 @@ class TextNotePart extends NotePart {
   }
 
   @override
-  Widget widget() =>
-    StyledText(
-      text: value,
-    );
+  Widget view() => StyledText(
+        text: value,
+      );
 }

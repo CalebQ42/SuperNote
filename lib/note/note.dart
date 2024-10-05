@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:supernote/note/part.dart';
 
 class Note {
   String title;
@@ -6,10 +6,8 @@ class Note {
   Map<(int, int), List<NotePart>?> parts;
 
   Note({this.title = "", this.parts = const {}});
-}
 
-abstract class NotePart {
-  Offset pos = const Offset(0, 0);
-
-  Widget widget();
+  void save(/* TODO */) {
+    //TODO
+  }
 }
