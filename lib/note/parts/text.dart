@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:styled_text/widgets/styled_text.dart';
 import 'package:supernote/note/part.dart';
 
 class TextNotePart extends NotePart {
   String value;
 
-  TextNotePart({this.value = "", Offset pos = const Offset(0, 0)}) {
-    super.pos = pos;
-  }
+  TextNotePart({
+    this.value = "",
+    super.pos,
+    super.size,
+  });
 
   @override
-  Widget view() => StyledText(
-        text: value,
-      );
+  Widget view() {
+    print(value);
+    return Text(
+      value,
+    );
+  }
 }
