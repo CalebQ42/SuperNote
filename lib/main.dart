@@ -13,11 +13,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var testNote = Note(title: "This&space;is&space;a&space;test", parts: {
+    var testNote = Note(title: "This is a test", parts: {
       (0, 0): [
         TextNotePart(
-          value:
-              "Hello world, this is a message that is long enough it extends past section boundries. Hopefully this works.",
+          value: "Hello world",
         )
       ],
       (0, 10): [

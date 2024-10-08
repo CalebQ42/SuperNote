@@ -23,11 +23,48 @@ abstract class NotePart with UniquePositionedWidget {
     this.size = size;
     this.scale = scale;
   }
+}
+
+class NotePartBorder extends StatefulWidget {
+  final NotePart note;
+
+  const NotePartBorder({super.key, required this.note});
 
   @override
-  Widget widget() {
-    return view();
-  }
+  State<StatefulWidget> createState() => _NotePartBorderState();
+}
 
-  Widget view();
+class _NotePartBorderState extends State<NotePartBorder> {
+  bool isFocused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    Decoration? deco;
+    if (isFocused) {
+      deco = BoxDecoration(
+        border: Border.all(),
+        borderRadius: BorderRadius.all(
+          Radius.circular(5.0),
+        ),
+      );
+    }
+    return Focus(
+      onFocusChange: (b) {
+        if (b != isFocused) {
+          setState(() => isFocused = b);
+          if (b) {
+            widget.note.onFocus();
+          }
+        }
+      },
+      skipTraversal: false,
+      descendantsAreFocusable: true,
+      descendantsAreTraversable: true,
+      child: Container(
+        padding: isFocused ? EdgeInsets.all(4) : EdgeInsets.all(5),
+        decoration: deco,
+        child: widget.note.view(),
+      ),
+    );
+  }
 }

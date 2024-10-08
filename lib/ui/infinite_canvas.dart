@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:single_child_two_dimensional_scroll_view/single_child_two_dimensional_scroll_view.dart';
 import 'package:supernote/note/part.dart';
@@ -12,8 +14,7 @@ class InfiniteCanvas extends StatefulWidget {
 }
 
 class InfiniteCanvasState extends State<InfiniteCanvas> {
-  late int xToLoad;
-  late int yToLoad;
+  late int toLoad;
   late (int, int) xLoaded;
   late (int, int) yLoaded;
 
@@ -35,21 +36,28 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
   @override
   Widget build(BuildContext context) {
     var sz = MediaQuery.of(context).size;
-    var newXToLoad = ((sz.width / 100).ceil()) * 3;
-    var newYToLoad = ((sz.height / 100).ceil()) * 3;
+    var newToLoad = (max(sz.width, sz.height) / 100).ceil() * 5;
+    if (horizontal == null) {
+      toLoad = newToLoad;
+      xLoaded = (0, toLoad);
+      yLoaded = (0, toLoad);
+    } else {
+      //TODO: figure out how many we need to load, and do so.
+    }
     if (horizontal == null) {
       horizontal = ScrollController();
       horizontal!.addListener(() async {
         var curSec = (vertical!.offset / 100).floor();
-        var newLoadedLow = curSec - xToLoad;
-        var newLoadedHigh = curSec + xToLoad;
+        var newLoadedLow = curSec - toLoad;
+        var newLoadedHigh = curSec + toLoad;
         if (newLoadedLow < 0) newLoadedLow = 0;
         if (newLoadedLow == xLoaded.$1 && newLoadedHigh == xLoaded.$2) return;
+        List<String> toRem = [];
+        List<UniquePositionedWidget> toAdd = [];
         if (newLoadedLow > xLoaded.$1) {
           for (var x = xLoaded.$1; x < newLoadedLow; x++) {
             for (var y = yLoaded.$1; y <= yLoaded.$2; y++) {
               var r = widget.getWidgets(y, x);
-              print("x1 removing $x, $y");
               if (r != null) {
                 for (var w in r) {
                   toRem.add(w.id);
@@ -61,7 +69,6 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
           for (var x = newLoadedLow; x < xLoaded.$1; x++) {
             for (var y = yLoaded.$1; y <= yLoaded.$2; y++) {
               var r = widget.getWidgets(y, x);
-              print("x1 adding $x, $y");
               if (r != null) {
                 toAdd.addAll(r);
               }
@@ -72,7 +79,6 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
           for (var x = xLoaded.$2 + 1; x <= newLoadedHigh; x++) {
             for (var y = yLoaded.$1; y <= yLoaded.$2; y++) {
               var r = widget.getWidgets(y, x);
-              print("x2 adding $x, $y");
               if (r != null) {
                 toAdd.addAll(r);
               }
@@ -82,7 +88,6 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
           for (var x = newLoadedHigh; x <= xLoaded.$2; x++) {
             for (var y = yLoaded.$1; y <= yLoaded.$2; y++) {
               var r = widget.getWidgets(y, x);
-              print("x2 removing $x, $y");
               if (r != null) {
                 for (var w in r) {
                   toRem.add(w.id);
@@ -93,16 +98,14 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
         }
         xLoaded = (newLoadedLow, newLoadedHigh);
         stack.currentState?.addAndRemove(toAdd, toRem);
-        print("yLoad: $yLoaded");
-        print("xLoad: $xLoaded");
       });
     }
     if (vertical == null) {
       vertical = ScrollController();
       vertical!.addListener(() async {
         var curSec = (vertical!.offset / 100).floor();
-        var newLoadedLow = curSec - yToLoad;
-        var newLoadedHigh = curSec + yToLoad;
+        var newLoadedLow = curSec - toLoad;
+        var newLoadedHigh = curSec + toLoad;
         if (newLoadedLow < 0) newLoadedLow = 0;
         List<String> toRem = [];
         List<UniquePositionedWidget> toAdd = [];
@@ -113,7 +116,6 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
               var r = widget.getWidgets(x, y);
               if (r != null) {
                 for (var w in r) {
-                  print("y1 remove: widgets in $x, $y: ${r?.length}");
                   toRem.add(w.id);
                 }
               }
@@ -124,7 +126,6 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
             for (var x = xLoaded.$1; x <= xLoaded.$2; x++) {
               var r = widget.getWidgets(x, y);
               if (r != null) {
-                print("y1 add: widgets in $x, $y: ${r?.length}");
                 toAdd.addAll(r);
               }
             }
@@ -135,7 +136,6 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
             for (var x = xLoaded.$1; x <= xLoaded.$2; x++) {
               var r = widget.getWidgets(x, y);
               if (r != null) {
-                print("y2 add: widgets in $x, $y: ${r?.length}");
                 toAdd.addAll(r);
               }
             }
@@ -145,7 +145,6 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
             for (var x = xLoaded.$1; x <= xLoaded.$2; x++) {
               var r = widget.getWidgets(x, y);
               if (r != null) {
-                print("y2 remove: widgets in $x, $y: ${r?.length}");
                 for (var w in r) {
                   toRem.add(w.id);
                 }
@@ -154,15 +153,9 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
           }
         }
         yLoaded = (newLoadedLow, newLoadedHigh);
-        print("removing: $toRem");
-        print("adding: $toAdd");
         if (toAdd.isNotEmpty || toRem.isNotEmpty) {
-          print("adding/removing");
           stack.currentState?.addAndRemove(toAdd, toRem);
-          print("stack: ${stack.currentState?.children}");
         }
-        print("xLoad: $xLoaded");
-        print("yLoad: $yLoaded");
       });
     }
     List<UniquePositionedWidget> init = [];
