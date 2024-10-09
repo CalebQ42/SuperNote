@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:supernote/note/note.dart';
-import 'package:supernote/note/parts/text.dart';
-import 'package:supernote/ui/infinite_canvas.dart';
+import 'package:supernote/note/parts/text_part.dart';
+import 'package:supernote/ui/note_canvas.dart';
 
 void main() {
   runApp(const MainApp());
@@ -27,13 +27,11 @@ class MainApp extends StatelessWidget {
       ]
     });
     return MaterialApp(
-      home: Scaffold(body: Center(
-        child: InfiniteCanvas(
-          getWidgets: (x, y) {
-            return testNote.parts[(x, y)];
-          },
+      home: Scaffold(
+        body: Center(
+          child: NoteCanvas(note: testNote),
         ),
-      )),
+      ),
     );
   }
 }
