@@ -14,7 +14,8 @@ dependencies:
   single_child_two_dimensional_scroll_view: ^0.0.3
   uuid: ^4.5.1
   appflowy_editor: ^3.3.0
-  super_editor: ^0.3.0-dev.9
+  # super_editor: ^0.3.0-dev.9
+  # super_editor_markdown: ^0.1.6
 
 dev_dependencies:
   flutter_test:
