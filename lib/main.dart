@@ -17,13 +17,16 @@ class MainApp extends StatelessWidget {
       (0, 0): [
         TextNotePart(
           value: "Hello world",
+          zHeight: 1,
         )
       ],
-      (0, 10): [
+      (1, 2): [
         TextNotePart(
-            value:
-                "Hello world, this is a message that is long enough it extends past section boundries. Hopefully this works.",
-            pos: Offset(0, 1000))
+          value:
+              "Hello world, this is a message that is long enough it extends past section boundries. Hopefully this works.",
+          pos: Offset(100, 200),
+          zHeight: 0,
+        ),
       ]
     });
     return MaterialApp(

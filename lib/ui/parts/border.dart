@@ -25,9 +25,14 @@ class _NotePartBorderState extends State<NotePartBorder> {
           setState(() => isFocused = b);
         }
       },
+      canRequestFocus: true,
+      skipTraversal: true,
+      descendantsAreFocusable: true,
+      descendantsAreTraversable: true,
       child: Container(
         padding: EdgeInsets.all(5),
         decoration: BoxDecoration(
+          color: isFocused ? Theme.of(context).canvasColor : null,
           border:
               Border.all(color: isFocused ? Colors.black : Colors.transparent),
           borderRadius: BorderRadius.all(
