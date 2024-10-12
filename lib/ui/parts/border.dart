@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class NotePartBorder extends StatefulWidget {
   final FocusNode? passthroughFocus;
   final Widget? child;
+  final void Function(bool)? onFocusChange;
 
   const NotePartBorder({
     super.key,
     this.child,
     this.passthroughFocus,
+    this.onFocusChange,
   });
 
   @override
@@ -23,6 +25,9 @@ class _NotePartBorderState extends State<NotePartBorder> {
       onFocusChange: (b) {
         if (b != isFocused) {
           setState(() => isFocused = b);
+          if (widget.onFocusChange != null) {
+            widget.onFocusChange!(b);
+          }
         }
       },
       canRequestFocus: true,

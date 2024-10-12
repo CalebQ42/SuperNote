@@ -20,14 +20,14 @@ class MainApp extends StatelessWidget {
           zHeight: 1,
         )
       ],
-      (1, 2): [
-        TextNotePart(
-          value:
-              "Hello world, this is a message that is long enough it extends past section boundries. Hopefully this works.",
-          pos: Offset(100, 200),
-          zHeight: 0,
-        ),
-      ]
+      // (1, 2): [
+      //   TextNotePart(
+      //     value:
+      //         "Hello world, this is a message that is long enough it extends past section boundries. Hopefully this works.",
+      //     pos: Offset(100, 200),
+      //     zHeight: 0,
+      //   ),
+      // ]
     });
     return MaterialApp(
       home: Scaffold(

@@ -7,7 +7,13 @@ class TextNotePart extends NotePart {
 
   FocusNode fn = FocusNode();
 
-  TextNotePart({this.value = "", super.pos, super.size, super.zHeight});
+  TextNotePart({
+    this.value = "",
+    super.pos,
+    super.size,
+    super.zHeight,
+    super.manualSize,
+  });
 
   @override
   Widget widget() => TextNoteWidget(key: ValueKey(id), note: this);

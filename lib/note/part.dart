@@ -10,6 +10,9 @@ abstract class NotePart with UniqueZHeightWidget {
   double scale;
   @override
   int zHeight;
+  bool manualSize;
+  @override
+  bool isFocused;
 
   NotePart({
     String? id,
@@ -17,6 +20,8 @@ abstract class NotePart with UniqueZHeightWidget {
     this.size = const Size(300.0, 300.0),
     this.scale = 1.0,
     this.zHeight = 0,
+    this.manualSize = false,
+    this.isFocused = false,
   }) {
     if (id != null) this.id = id;
   }

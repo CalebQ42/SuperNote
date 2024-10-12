@@ -15,7 +15,6 @@ dependencies:
   uuid: ^4.5.1
   super_editor: ^0.3.0-dev.9
   super_editor_markdown: ^0.1.6
-  measured_size: ^1.0.0
 
 dev_dependencies:
   flutter_test:

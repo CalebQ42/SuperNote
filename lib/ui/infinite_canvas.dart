@@ -6,6 +6,7 @@ import 'package:single_child_two_dimensional_scroll_view/single_child_two_dimens
 mixin UniqueZHeightWidget {
   String get id;
   int get zHeight;
+  bool get isFocused;
 
   Widget widget();
 }
@@ -253,7 +254,10 @@ class InfiniteStackState extends State<InfiniteStack> {
     sort();
   }
 
-  void sort() => children.sort((a, b) => a.zHeight.compareTo(b.zHeight));
+  void sort() => children.sort((a, b) {
+        if (a.isFocused) return -1;
+        return a.zHeight.compareTo(b.zHeight);
+      });
 
   @override
   Widget build(BuildContext context) {
