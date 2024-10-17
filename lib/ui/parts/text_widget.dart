@@ -146,6 +146,7 @@ class _TextNoteWidgetState extends State<TextNoteWidget> {
       var sizeSet = false;
       var newWidth = widget.note.size.width;
       var newHeight = widget.note.size.height;
+      // TODO: default max width should be less arbitrary. Possibly based on the current device's width.
       if (!widget.note.manualSize && widget.note.size.width < 800) {
         newWidth = min(
           800,
@@ -178,7 +179,9 @@ class _TextNoteWidgetState extends State<TextNoteWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
+    // TODO: Move Positioned into NotePartBorder
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 150),
       top: widget.note.pos.dy,
       left: widget.note.pos.dx,
       height: widget.note.size.height,
@@ -260,7 +263,9 @@ class _Listen extends EditListener {
       print("no rect");
       return;
     }
-    print(rect);
+    print("first and last pos rect: $rect");
+    print("last edge: ${lay.getEdgeForPosition(high)}");
+    print("last pos rect: ${lay.getRectForPosition(high)}");
     var sty = getStyleForCurSelection().firstOrNull;
     sizeChange(
       rect.width,
