@@ -139,31 +139,40 @@ class _TextNoteWidgetState extends State<TextNoteWidget> {
     doc = MutableDocument(nodes: [
       ParagraphNode(id: "0", text: AttributedText(widget.note.value)),
     ]);
-    listen = _Listen(layoutKey, compose, doc, style,
-        (width, height, fontSize, padding) {
-      fontSize ??= 25;
-      padding ??= CascadingPadding.all(10);
-      var sizeSet = false;
-      var newWidth = widget.note.size.width;
-      var newHeight = widget.note.size.height;
-      // TODO: default max width should be less arbitrary. Possibly based on the current device's width.
-      if (!widget.note.manualSize && widget.note.size.width < 800) {
-        newWidth = min(
-          800,
-          width + (fontSize * 2) + (padding.left ?? 0) + (padding.right ?? 0),
-        );
-        if (newWidth != widget.note.size.width) {
-          sizeSet = true;
-        }
-      }
-      newHeight = height + 10 + (padding.top ?? 0) + (padding.bottom ?? 0);
-      if (newHeight != widget.note.size.height) {
-        sizeSet = true;
-      }
-      if (sizeSet) {
-        setState(() => widget.note.size = Size(newWidth, newHeight));
-      }
-    });
+    listen = _Listen(
+        layoutKey: layoutKey,
+        compose: compose,
+        doc: doc,
+        style: style,
+        maxWidth: 790,
+        sizeChange: (width, height, fontSize, padding) {
+          print("incoming width: $width");
+          fontSize ??= 25;
+          padding ??= CascadingPadding.all(10);
+          var sizeSet = false;
+          var newWidth = widget.note.size.width;
+          var newHeight = widget.note.size.height;
+          // TODO: default max width should be less arbitrary. Possibly based on the current device's width.
+          if (!widget.note.manualSize) {
+            newWidth = min(
+              800,
+              width +
+                  (fontSize * 1.5) +
+                  (padding.left ?? 0) +
+                  (padding.right ?? 0),
+            );
+            if (newWidth != widget.note.size.width) {
+              sizeSet = true;
+            }
+          }
+          newHeight = height + 10 + (padding.top ?? 0) + (padding.bottom ?? 0);
+          if (newHeight != widget.note.size.height) {
+            sizeSet = true;
+          }
+          if (sizeSet) {
+            setState(() => widget.note.size = Size(newWidth, newHeight));
+          }
+        });
     edit = createDefaultDocumentEditor(
       composer: compose,
       document: doc,
@@ -180,18 +189,22 @@ class _TextNoteWidgetState extends State<TextNoteWidget> {
   @override
   Widget build(BuildContext context) {
     // TODO: Move Positioned into NotePartBorder
-    return AnimatedPositioned(
-      duration: const Duration(milliseconds: 150),
+    return Positioned(
       top: widget.note.pos.dy,
       left: widget.note.pos.dx,
       height: widget.note.size.height,
       width: widget.note.size.width,
-      child: NotePartBorder(
-        child: SuperEditor(
-          editor: edit,
-          stylesheet: style,
-          documentLayoutKey: layoutKey,
-          plugins: {MarkdownInlineUpstreamSyntaxPlugin()},
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: widget.note.size.height,
+        height: widget.note.size.width,
+        child: NotePartBorder(
+          child: SuperEditor(
+            editor: edit,
+            stylesheet: style,
+            documentLayoutKey: layoutKey,
+            plugins: {MarkdownInlineUpstreamSyntaxPlugin()},
+          ),
         ),
       ),
     );
@@ -205,17 +218,28 @@ class _Listen extends EditListener {
   Stylesheet style;
   void Function(double width, double height, double? fontSize,
       CascadingPadding? padding) sizeChange;
+  double maxWidth;
 
-  _Listen(this.layoutKey, this.compose, this.doc, this.style, this.sizeChange);
+  _Listen({
+    required this.layoutKey,
+    required this.compose,
+    required this.doc,
+    required this.style,
+    required this.sizeChange,
+    required this.maxWidth,
+  });
 
   @override
   void onEdit(List<EditEvent> changeList) {
     bool paragraphAdded = false;
+    bool characterAdd = false;
     for (var c in changeList) {
       if (c is SubmitParagraphIntention ||
           c is SplitParagraphIntention ||
           c is SplitListItemIntention) {
         paragraphAdded = true;
+      } else if (c is TextInsertionEvent) {
+        characterAdd = true;
       }
     }
     var heightOffset = 0.0;
@@ -248,6 +272,29 @@ class _Listen extends EditListener {
       print("no lay");
       return;
     }
+
+    var trueWidth = 0.0;
+    for (var d in doc) {
+      if (!currentlySelectedNodes().contains(d)) continue;
+      var lastPos = lay.getRectForPosition(
+          DocumentPosition(nodeId: d.id, nodePosition: d.endPosition));
+      var r = lay.getRectForSelection(
+          DocumentPosition(nodeId: d.id, nodePosition: d.beginningPosition),
+          DocumentPosition(nodeId: d.id, nodePosition: d.endPosition));
+      if (lastPos == null || r == null) continue;
+      var lines = (r.height / lastPos.height).round();
+      var sty = getStyleForNode(d);
+      var falseSize = lines * r.width;
+      if (characterAdd) falseSize += (sty.$1?.fontSize ?? 24) * 1.5;
+      trueWidth = max(trueWidth, falseSize);
+      if (lastPos.right >= maxWidth - ((sty.$1?.fontSize ?? 0) * 1.5)) {
+        heightOffset = (sty.$1?.fontSize ?? 0);
+        heightOffset += (sty.$2?.bottom ?? 0) + 8;
+        break;
+      }
+    }
+    // print(trueWidth);
+
     var high = lay.findLastSelectablePosition();
     if (high == null) {
       print("no high");
@@ -263,12 +310,9 @@ class _Listen extends EditListener {
       print("no rect");
       return;
     }
-    print("first and last pos rect: $rect");
-    print("last edge: ${lay.getEdgeForPosition(high)}");
-    print("last pos rect: ${lay.getRectForPosition(high)}");
     var sty = getStyleForCurSelection().firstOrNull;
     sizeChange(
-      rect.width,
+      trueWidth,
       rect.height + heightOffset,
       sty?.$1?.fontSize,
       sty?.$2,
