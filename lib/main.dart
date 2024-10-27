@@ -13,22 +13,12 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var testNote = Note(title: "This is a test", parts: {
-      (0, 0): [
-        TextNotePart(
-          value: "Hello world",
-          zHeight: 1,
-        )
-      ],
-      // (1, 2): [
-      //   TextNotePart(
-      //     value:
-      //         "Hello world, this is a message that is long enough it extends past section boundries. Hopefully this works.",
-      //     pos: Offset(100, 200),
-      //     zHeight: 0,
-      //   ),
-      // ]
-    });
+    Note testNote = Note();
+    testNote.add(TextNotePart(
+      parent: testNote,
+      value: "Hello world",
+      zHeight: 1,
+    ));
     return MaterialApp(
       home: Scaffold(
         body: Center(

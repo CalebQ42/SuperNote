@@ -2,17 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:single_child_two_dimensional_scroll_view/single_child_two_dimensional_scroll_view.dart';
-
-mixin UniqueZHeightWidget {
-  String get id;
-  int get zHeight;
-  bool get isFocused;
-
-  Widget widget();
-}
+import 'package:supernote/note/part.dart';
 
 class InfiniteCanvas extends StatefulWidget {
-  final List<UniqueZHeightWidget>? Function(int, int) getWidgets;
+  final List<NotePart>? Function(int, int) getWidgets;
 
   const InfiniteCanvas({super.key, required this.getWidgets});
 
@@ -37,7 +30,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
   void updateXAndYLoaded((int, int) newX, (int, int) newY) async {
     if (newX == xLoaded && newY == yLoaded) return;
     List<String> toRem = [];
-    List<UniqueZHeightWidget> toAdd = [];
+    List<NotePart> toAdd = [];
   }
 
   @override
@@ -60,7 +53,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
         if (newLoadedLow < 0) newLoadedLow = 0;
         if (newLoadedLow == xLoaded.$1 && newLoadedHigh == xLoaded.$2) return;
         List<String> toRem = [];
-        List<UniqueZHeightWidget> toAdd = [];
+        List<NotePart> toAdd = [];
         if (newLoadedLow > xLoaded.$1) {
           for (var x = xLoaded.$1; x < newLoadedLow; x++) {
             for (var y = yLoaded.$1; y <= yLoaded.$2; y++) {
@@ -115,7 +108,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
         var newLoadedHigh = curSec + toLoad;
         if (newLoadedLow < 0) newLoadedLow = 0;
         List<String> toRem = [];
-        List<UniqueZHeightWidget> toAdd = [];
+        List<NotePart> toAdd = [];
         if (newLoadedLow == yLoaded.$1 && newLoadedHigh == yLoaded.$2) return;
         if (newLoadedLow > yLoaded.$1) {
           for (var y = yLoaded.$1; y < newLoadedLow; y++) {
@@ -165,7 +158,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
         }
       });
     }
-    List<UniqueZHeightWidget> init = [];
+    List<NotePart> init = [];
     for (var x = xLoaded.$1; x < xLoaded.$2; x++) {
       for (var y = yLoaded.$1; y < yLoaded.$2; y++) {
         var wids = widget.getWidgets(x, y);
@@ -187,7 +180,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
 }
 
 class InfiniteStack extends StatefulWidget {
-  final List<UniqueZHeightWidget> initChildren;
+  final List<NotePart> initChildren;
 
   const InfiniteStack({super.key, this.initChildren = const []});
 
@@ -196,7 +189,7 @@ class InfiniteStack extends StatefulWidget {
 }
 
 class InfiniteStackState extends State<InfiniteStack> {
-  List<UniqueZHeightWidget> children = [];
+  List<NotePart> children = [];
   Set<String> childrenIds = {};
 
   @override
@@ -209,7 +202,7 @@ class InfiniteStackState extends State<InfiniteStack> {
     }
   }
 
-  void addAndRemove(List<UniqueZHeightWidget>? toAdd, List<String> toRemove) {
+  void addAndRemove(List<NotePart>? toAdd, List<String> toRemove) {
     var wasChanged = false;
     for (var id in toRemove) {
       if (childrenIds.contains(id)) {
@@ -243,7 +236,7 @@ class InfiniteStackState extends State<InfiniteStack> {
     }
   }
 
-  void add(List<UniqueZHeightWidget>? toAdd) {
+  void add(List<NotePart>? toAdd) {
     if (toAdd == null) {
       return;
     }

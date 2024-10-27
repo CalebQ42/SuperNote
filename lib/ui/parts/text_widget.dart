@@ -7,24 +7,66 @@ import 'package:super_editor_markdown/super_editor_markdown.dart';
 import 'package:supernote/note/parts/text_part.dart';
 import 'package:supernote/ui/parts/border.dart';
 
-class TextNoteWidget extends StatefulWidget {
+class TextNoteWidget extends StatelessWidget {
   final TextNotePart note;
 
-  const TextNoteWidget({super.key, required this.note});
+  late final MutableDocument doc;
+  late final MutableDocumentComposer compose;
+  late final Editor edit;
+  final GlobalKey<State<StatefulWidget>> layoutKey = GlobalKey();
+  late final _Listen _listen;
 
-  @override
-  State<TextNoteWidget> createState() => _TextNoteWidgetState();
-}
-
-class _TextNoteWidgetState extends State<TextNoteWidget> {
-  late MutableDocument doc;
-  late MutableDocumentComposer compose;
-  late Editor edit;
-  GlobalKey<State<StatefulWidget>> layoutKey = GlobalKey();
-  late _Listen listen;
+  TextNoteWidget({super.key, required this.note}) {
+    compose = MutableDocumentComposer();
+    doc = MutableDocument(nodes: [
+      //TODO: actually initialize the state.
+      ParagraphNode(id: "0", text: AttributedText(note.value)),
+    ]);
+    _listen = _Listen(
+      layoutKey: layoutKey,
+      compose: compose,
+      doc: doc,
+      style: style,
+      maxWidth: () {
+        if (note.manualWidth) {
+          return note.size.width;
+        }
+        // TODO: default max width should be less arbitrary. Possibly based on the current device's width.
+        return 790;
+      },
+      getTextSize: _textSize,
+      sizeChange: (width, height, fontSize) {
+        var sizeSet = false;
+        var newWidth = note.size.width;
+        var newHeight = note.size.height;
+        // TODO: default max width should be less arbitrary. Possibly based on the current device's width.
+        if (!note.manualWidth) {
+          newWidth = min(
+            800,
+            width + 10 + (fontSize),
+          );
+          if (newWidth != note.size.width) {
+            sizeSet = true;
+          }
+        }
+        newHeight = height + 15;
+        if (newHeight != note.size.height) {
+          sizeSet = true;
+        }
+        if (sizeSet) {
+          note.size = Size(newWidth, newHeight);
+        }
+      },
+    );
+    edit = createDefaultDocumentEditor(
+      composer: compose,
+      document: doc,
+      isHistoryEnabled: true,
+    )..addListener(_listen);
+  }
 
   // Largely taken from the defaultStylesheet, but with some padding and maxWidth removed.
-  Stylesheet style = defaultStylesheet.copyWith(rules: [
+  final Stylesheet style = defaultStylesheet.copyWith(rules: [
     StyleRule(
       BlockSelector.all,
       (doc, docNode) {
@@ -40,10 +82,8 @@ class _TextNoteWidgetState extends State<TextNoteWidget> {
     StyleRule(
       BlockSelector("paragraph"),
       (doc, docNode) {
-        if (doc.getNodeIndexById(docNode.id) != 0) {
-          return {Styles.padding: const CascadingPadding.only(top: 8)};
-        }
-        return {};
+        return {Styles.padding: const CascadingPadding.symmetric(vertical: 4)};
+        // return {};
       },
     ),
     StyleRule(
@@ -133,190 +173,95 @@ class _TextNoteWidgetState extends State<TextNoteWidget> {
   ]);
 
   @override
-  void initState() {
-    super.initState();
-    compose = MutableDocumentComposer();
-    doc = MutableDocument(nodes: [
-      ParagraphNode(id: "0", text: AttributedText(widget.note.value)),
-    ]);
-    listen = _Listen(
-        layoutKey: layoutKey,
-        compose: compose,
-        doc: doc,
-        style: style,
-        maxWidth: 790,
-        sizeChange: (width, height, fontSize, padding) {
-          print("incoming width: $width");
-          fontSize ??= 25;
-          padding ??= CascadingPadding.all(10);
-          var sizeSet = false;
-          var newWidth = widget.note.size.width;
-          var newHeight = widget.note.size.height;
-          // TODO: default max width should be less arbitrary. Possibly based on the current device's width.
-          if (!widget.note.manualSize) {
-            newWidth = min(
-              800,
-              width +
-                  (fontSize * 1.5) +
-                  (padding.left ?? 0) +
-                  (padding.right ?? 0),
-            );
-            if (newWidth != widget.note.size.width) {
-              sizeSet = true;
-            }
-          }
-          newHeight = height + 10 + (padding.top ?? 0) + (padding.bottom ?? 0);
-          if (newHeight != widget.note.size.height) {
-            sizeSet = true;
-          }
-          if (sizeSet) {
-            setState(() => widget.note.size = Size(newWidth, newHeight));
-          }
-        });
-    edit = createDefaultDocumentEditor(
-      composer: compose,
-      document: doc,
-      isHistoryEnabled: true,
-    )..addListener(listen);
-  }
-
-  @override
-  void dispose() {
-    edit.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // TODO: Move Positioned into NotePartBorder
-    return Positioned(
-      top: widget.note.pos.dy,
-      left: widget.note.pos.dx,
-      height: widget.note.size.height,
-      width: widget.note.size.width,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: widget.note.size.height,
-        height: widget.note.size.width,
-        child: NotePartBorder(
-          child: SuperEditor(
-            editor: edit,
-            stylesheet: style,
-            documentLayoutKey: layoutKey,
-            plugins: {MarkdownInlineUpstreamSyntaxPlugin()},
-          ),
-        ),
+    return NotePartBorder(
+      part: note,
+      child: SuperEditor(
+        editor: edit,
+        stylesheet: style,
+        documentLayoutKey: layoutKey,
+        plugins: {MarkdownInlineUpstreamSyntaxPlugin()},
       ),
     );
+  }
+
+  // Thanks to: https://stackoverflow.com/a/60065737
+  Size _textSize(String text, TextStyle style, double maxWidth) {
+    final TextPainter textPainter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr)
+      ..layout(minWidth: 0, maxWidth: maxWidth);
+    return textPainter.size;
   }
 }
 
 class _Listen extends EditListener {
-  GlobalKey<State<StatefulWidget>> layoutKey = GlobalKey();
-  MutableDocumentComposer compose;
-  Document doc;
-  Stylesheet style;
-  void Function(double width, double height, double? fontSize,
-      CascadingPadding? padding) sizeChange;
-  double maxWidth;
+  final GlobalKey<State<StatefulWidget>> layoutKey;
+  final MutableDocumentComposer compose;
+  final Document doc;
+  final Stylesheet style;
+  final void Function(double width, double height, double fontSize) sizeChange;
+  final Size Function(String text, TextStyle style, double maxWidth)
+      getTextSize;
+  final double Function() maxWidth;
 
   _Listen({
     required this.layoutKey,
     required this.compose,
     required this.doc,
     required this.style,
+    required this.getTextSize,
     required this.sizeChange,
     required this.maxWidth,
   });
 
   @override
   void onEdit(List<EditEvent> changeList) {
-    bool paragraphAdded = false;
-    bool characterAdd = false;
-    for (var c in changeList) {
-      if (c is SubmitParagraphIntention ||
-          c is SplitParagraphIntention ||
-          c is SplitListItemIntention) {
-        paragraphAdded = true;
-      } else if (c is TextInsertionEvent) {
-        characterAdd = true;
-      }
-    }
-    var heightOffset = 0.0;
-    if (paragraphAdded) {
-      var found = false;
-      var nodes = currentlySelectedNodes();
-      for (var n in nodes) {
-        if (n is TextNode && n.text.text == "") {
-          found = true;
-          var sty = getStyleForNode(n);
-          heightOffset = (sty.$1?.fontSize ?? 0);
-          heightOffset += (sty.$2?.top ?? 0) + (sty.$2?.bottom ?? 0) + 8;
-          break;
-        }
-      }
-      if (!found && nodes.isNotEmpty) {
-        var firstIndex = doc.getNodeIndexById(nodes[0].id);
-        if (firstIndex > 0) {
-          var newParaNode = doc.getNodeAt(firstIndex - 1);
-          if (newParaNode is TextNode) {
-            var sty = getStyleForNode(newParaNode);
-            heightOffset = (sty.$1?.fontSize ?? 0);
-            heightOffset += (sty.$2?.top ?? 0) + (sty.$2?.bottom ?? 0) + 8;
-          }
-        }
-      }
-    }
-    var lay = (layoutKey.currentState as DocumentLayout?);
-    if (lay == null) {
-      print("no lay");
+    if (changeList.every((element) =>
+        element is SelectionChangeEvent ||
+        element is ComposingRegionChangeEvent)) {
       return;
     }
 
-    var trueWidth = 0.0;
+    var width = 0.0;
+    var height = 0.0;
     for (var d in doc) {
-      if (!currentlySelectedNodes().contains(d)) continue;
-      var lastPos = lay.getRectForPosition(
-          DocumentPosition(nodeId: d.id, nodePosition: d.endPosition));
-      var r = lay.getRectForSelection(
-          DocumentPosition(nodeId: d.id, nodePosition: d.beginningPosition),
-          DocumentPosition(nodeId: d.id, nodePosition: d.endPosition));
-      if (lastPos == null || r == null) continue;
-      var lines = (r.height / lastPos.height).round();
-      var sty = getStyleForNode(d);
-      var falseSize = lines * r.width;
-      if (characterAdd) falseSize += (sty.$1?.fontSize ?? 24) * 1.5;
-      trueWidth = max(trueWidth, falseSize);
-      if (lastPos.right >= maxWidth - ((sty.$1?.fontSize ?? 0) * 1.5)) {
-        heightOffset = (sty.$1?.fontSize ?? 0);
-        heightOffset += (sty.$2?.bottom ?? 0) + 8;
-        break;
+      if (d is TextNode) {
+        if (d.text.text == "") {
+          var nodeSty = getStyleForNode(d);
+          if (nodeSty.$1 != null) {
+            var textSize = getTextSize(
+              "",
+              nodeSty.$1!,
+              maxWidth() - ((nodeSty.$2?.left ?? 0) + (nodeSty.$2?.right ?? 0)),
+            );
+            height += textSize.height +
+                (nodeSty.$2?.top ?? 5) +
+                (nodeSty.$2?.bottom ?? 5);
+          }
+        } else {
+          var nodeSty = getStyleForNode(d);
+          if (nodeSty.$1 == null) continue;
+          var partWidth = (nodeSty.$2?.left ?? 0) + (nodeSty.$2?.right ?? 0);
+          var maxHeight = 0.0;
+          d.text.visitAttributionSpans((span) {
+            var sty = style.inlineTextStyler(span.attributions, nodeSty.$1!);
+            var textSize = getTextSize(
+              d.text.text.substring(span.start, span.end + 1),
+              sty,
+              maxWidth() - ((nodeSty.$2?.left ?? 0) + (nodeSty.$2?.right ?? 0)),
+            );
+            maxHeight = max(maxHeight, textSize.height);
+            partWidth += textSize.width;
+          });
+          height +=
+              maxHeight + (nodeSty.$2?.top ?? 0) + (nodeSty.$2?.bottom ?? 0);
+          width = max(width, partWidth);
+        }
       }
     }
-    // print(trueWidth);
-
-    var high = lay.findLastSelectablePosition();
-    if (high == null) {
-      print("no high");
-      return;
-    }
-    var low = lay.getDocumentPositionAtOffset(Offset(0, 0));
-    if (low == null) {
-      print("no low");
-      return;
-    }
-    var rect = lay.getRectForSelection(low, high);
-    if (rect == null) {
-      print("no rect");
-      return;
-    }
-    var sty = getStyleForCurSelection().firstOrNull;
-    sizeChange(
-      trueWidth,
-      rect.height + heightOffset,
-      sty?.$1?.fontSize,
-      sty?.$2,
-    );
+    var sty = getStyleForCurSelection().lastOrNull;
+    sizeChange(width, height, sty?.$1?.fontSize ?? 25);
   }
 
   List<(TextStyle?, CascadingPadding?)> getStyleForCurSelection() {
@@ -334,7 +279,11 @@ class _Listen extends EditListener {
       if (r.selector.matches(doc, n)) {
         var sty = r.styler(doc, n);
         if (sty.containsKey(Styles.textStyle)) {
-          curStyle = sty[Styles.textStyle];
+          if (curStyle != null) {
+            curStyle = curStyle.merge(sty[Styles.textStyle]);
+          } else {
+            curStyle = sty[Styles.textStyle];
+          }
         }
         if (sty.containsKey(Styles.padding)) {
           if (curPadding != null) {
