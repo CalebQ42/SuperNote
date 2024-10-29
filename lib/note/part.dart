@@ -6,6 +6,7 @@ abstract class NotePart {
   late final String id;
   int zHeight;
   bool isFocused;
+  bool isDragging = false;
 
   Offset _pos = Offset(0, 0);
   Size _size = Size(100, 100);

@@ -5,7 +5,7 @@ import 'package:super_editor/super_editor.dart';
 import 'package:super_editor_markdown/super_editor_markdown.dart';
 
 import 'package:supernote/note/parts/text_part.dart';
-import 'package:supernote/ui/parts/border.dart';
+import 'package:supernote/ui/border.dart';
 
 class TextNoteWidget extends StatelessWidget {
   final TextNotePart note;
@@ -43,13 +43,13 @@ class TextNoteWidget extends StatelessWidget {
         if (!note.manualWidth) {
           newWidth = min(
             800,
-            width + 10 + (fontSize),
+            width + 15 + (fontSize * 2),
           );
           if (newWidth != note.size.width) {
             sizeSet = true;
           }
         }
-        newHeight = height + 15;
+        newHeight = height + 20;
         if (newHeight != note.size.height) {
           sizeSet = true;
         }

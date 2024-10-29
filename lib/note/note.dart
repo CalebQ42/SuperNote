@@ -7,19 +7,26 @@ class Note {
   String title;
   // <100px by 100px section (x, y), Notes in section>
   Map<(int, int), List<NotePart>> parts = {};
+  Set<int> zHeights = {};
 
-  Note({this.title = "", Map<(int, int), List<NotePart>>? parts, String? id}) {
+  Note({this.title = "", List<NotePart>? parts, String? id}) {
     if (id == null) {
       this.id = Uuid().v7();
     }
     if (parts != null) {
-      this.parts = parts;
+      for (var p in parts) {
+        add(p);
+      }
     }
   }
 
   void add(NotePart part) {
     var x = (part.pos.dx / 100).floor();
     var y = (part.pos.dy / 100).floor();
+    while (zHeights.contains(part.zHeight)) {
+      part.zHeight++;
+    }
+    zHeights.add(part.zHeight);
     if (parts[(x, y)] == null) {
       parts[(x, y)] = [part];
     } else {

@@ -255,7 +255,9 @@ class InfiniteStackState extends State<InfiniteStack> {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      children: List.generate(children.length, (i) => children[i].widget()),
+      children: [
+        ...List.generate(children.length, (i) => children[i].widget()),
+      ],
     );
   }
 }

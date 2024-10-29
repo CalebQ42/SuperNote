@@ -17,7 +17,6 @@ class MainApp extends StatelessWidget {
     testNote.add(TextNotePart(
       parent: testNote,
       value: "Hello world",
-      zHeight: 1,
     ));
     return MaterialApp(
       home: Scaffold(
