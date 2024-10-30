@@ -255,13 +255,19 @@ class _NotePartBorderState extends State<NotePartBorder> {
                 ),
               ),
             ),
+            // Grab Handle
             Positioned(
               left: (widget.part.size.width / 2) - 25,
               top: 0,
-              height: 5,
+              height: 7.5,
               width: 50,
               child: GestureDetector(
+                onPanStart: (deets) {
+                  print(deets.localPosition);
+                },
                 onPanUpdate: (deets) {
+                  print(deets.localPosition);
+                  print(deets.globalPosition);
                   var newPos =
                       widget.part.pos.translate(deets.delta.dx, deets.delta.dy);
                   if (newPos.dx < 0) {
