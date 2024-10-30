@@ -43,14 +43,17 @@ class TextNoteWidget extends StatelessWidget {
         if (!note.manualWidth) {
           newWidth = min(
             800,
-            width + 15 + (fontSize * 2),
+            width + 15 + fontSize,
           );
           if (newWidth != note.size.width) {
             sizeSet = true;
           }
         }
         newHeight = height + 20;
-        if (newHeight != note.size.height) {
+        if (newHeight < note.size.height && sizeSet) {
+          newHeight = note.size.height;
+        }
+        if (newHeight > note.size.height) {
           sizeSet = true;
         }
         if (sizeSet) {

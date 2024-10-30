@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supernote/note/note.dart';
+import 'package:supernote/note/parts/text_part.dart';
 import 'package:uuid/uuid.dart';
 
 abstract class NotePart {
@@ -55,6 +56,21 @@ abstract class NotePart {
 
   set size(Size size) {
     _size = size;
+    notifyListeners();
+  }
+
+  void setPosAndSize({Offset? pos, Size? size, bool manual = true}) {
+    if (this is TextNotePart && size != null) {
+      if (this.size.width != size.width) {
+        (this as TextNotePart).manualWidth = true;
+      }
+    }
+    if (pos != null) {
+      this.pos = pos;
+    }
+    if (size != null) {
+      this.size = size;
+    }
     notifyListeners();
   }
 }

@@ -70,6 +70,191 @@ class _NotePartBorderState extends State<NotePartBorder> {
               ),
               child: widget.child,
             ),
+            // TL resize area
+            Positioned(
+              left: 0,
+              top: 0,
+              height: 10,
+              width: 10,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeUpLeftDownRight,
+                child: GestureDetector(
+                  onPanUpdate: (deets) {
+                    var newPos = widget.part.pos
+                        .translate(deets.delta.dx, deets.delta.dy);
+                    var newSize = Size(widget.part.size.width - deets.delta.dx,
+                        widget.part.size.height - deets.delta.dy);
+                    //TODO: Logical minimum height. Possibly based on child widget??
+                    if (newSize.height < 50 ||
+                        newPos.dy < 0 ||
+                        newSize.width < 75 ||
+                        newPos.dx < 0) {
+                      return;
+                    }
+                    widget.part.setPosAndSize(pos: newPos, size: newSize);
+                  },
+                ),
+              ),
+            ),
+            // Top resize area
+            Positioned(
+              left: 10,
+              top: 0,
+              height: 7.5,
+              width: widget.part.size.width - 20,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeUpDown,
+                child: GestureDetector(
+                  onVerticalDragUpdate: (deets) {
+                    var newPos = widget.part.pos
+                        .translate(deets.delta.dx, deets.delta.dy);
+                    var newSize = Size(widget.part.size.width,
+                        widget.part.size.height - deets.delta.dy);
+                    //TODO: Logical minimum height. Possibly based on child widget??
+                    if (newSize.height < 50 || newPos.dy < 0) {
+                      return;
+                    }
+                    widget.part.setPosAndSize(pos: newPos, size: newSize);
+                  },
+                ),
+              ),
+            ),
+            // TR resize area
+            Positioned(
+              left: widget.part.size.width - 10,
+              top: 0,
+              height: 10,
+              width: 10,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeUpRightDownLeft,
+                child: GestureDetector(
+                  onPanUpdate: (deets) {
+                    var newPos = widget.part.pos.translate(0, deets.delta.dy);
+                    var newSize = Size(widget.part.size.width + deets.delta.dx,
+                        widget.part.size.height - deets.delta.dy);
+                    //TODO: Logical minimum height. Possibly based on child widget??
+                    if (newSize.height < 50 ||
+                        newPos.dy < 0 ||
+                        newSize.width < 75 ||
+                        newPos.dx < 0) {
+                      return;
+                    }
+                    widget.part.setPosAndSize(pos: newPos, size: newSize);
+                  },
+                ),
+              ),
+            ),
+            // Right resize area
+            Positioned(
+              left: widget.part.size.width - 7.5,
+              top: 10,
+              width: 7.5,
+              height: widget.part.size.height - 20,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeLeftRight,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: (deets) {
+                    var newSize = Size(widget.part.size.width + deets.delta.dx,
+                        widget.part.size.height);
+                    //TODO: Logical minimum width. Possibly based on child widget??
+                    if (newSize.width < 75) {
+                      return;
+                    }
+                    widget.part.setPosAndSize(size: newSize);
+                  },
+                ),
+              ),
+            ),
+            // BR resize area
+            Positioned(
+              left: widget.part.size.width - 10,
+              top: widget.part.size.height - 10,
+              height: 10,
+              width: 10,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeUpLeftDownRight,
+                child: GestureDetector(
+                  onPanUpdate: (deets) {
+                    var newSize = Size(widget.part.size.width + deets.delta.dx,
+                        widget.part.size.height + deets.delta.dy);
+                    //TODO: Logical minimum height. Possibly based on child widget??
+                    if (newSize.height < 50 || newSize.width < 75) {
+                      return;
+                    }
+                    widget.part.setPosAndSize(size: newSize);
+                  },
+                ),
+              ),
+            ),
+            // Bottom resize area
+            Positioned(
+              left: 10,
+              top: widget.part.size.height - 7.5,
+              height: 7.5,
+              width: widget.part.size.width - 20,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeUpDown,
+                child: GestureDetector(
+                  onVerticalDragUpdate: (deets) {
+                    var newSize = Size(widget.part.size.width,
+                        widget.part.size.height + deets.delta.dy);
+                    //TODO: Logical minimum height. Possibly based on child widget??
+                    if (newSize.height < 50) {
+                      return;
+                    }
+                    widget.part.size = newSize;
+                  },
+                ),
+              ),
+            ),
+            // BL resize area
+            Positioned(
+              left: 0,
+              top: widget.part.size.height - 10,
+              height: 10,
+              width: 10,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeUpRightDownLeft,
+                child: GestureDetector(
+                  onPanUpdate: (deets) {
+                    var newPos = widget.part.pos.translate(deets.delta.dx, 0);
+                    var newSize = Size(widget.part.size.width - deets.delta.dx,
+                        widget.part.size.height + deets.delta.dy);
+                    //TODO: Logical minimum height. Possibly based on child widget??
+                    if (newSize.height < 50 ||
+                        newPos.dy < 0 ||
+                        newSize.width < 75 ||
+                        newPos.dx < 0) {
+                      return;
+                    }
+                    widget.part.setPosAndSize(pos: newPos, size: newSize);
+                  },
+                ),
+              ),
+            ),
+            // Left resize area
+            Positioned(
+              left: 0,
+              top: 10,
+              width: 7.5,
+              height: widget.part.size.height - 20,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeLeftRight,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: (deets) {
+                    var newPos = widget.part.pos
+                        .translate(deets.delta.dx, deets.delta.dy);
+                    var newSize = Size(widget.part.size.width - deets.delta.dx,
+                        widget.part.size.height);
+                    //TODO: Logical minimum width. Possibly based on child widget??
+                    if (newSize.width < 75 || newPos.dx < 0) {
+                      return;
+                    }
+                    widget.part.setPosAndSize(pos: newPos, size: newSize);
+                  },
+                ),
+              ),
+            ),
             Positioned(
               left: (widget.part.size.width / 2) - 25,
               top: 0,
